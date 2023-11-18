@@ -1,5 +1,6 @@
 package com.openclassrooms.chatop.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -21,8 +22,8 @@ public class RentalService {
 		return rentalRepository.findById(id);
 	}
 
-	public Iterable<Rental> getRentals() {
-		return rentalRepository.findAll();
+	public List<Rental> getRentals() {
+		return (List<Rental>) rentalRepository.findAll();
 	}
 
 	public void deleteRental(final Long id) {
