@@ -1,6 +1,7 @@
 package com.openclassrooms.chatop.controller;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,8 @@ public class MessageController {
 			return new ResponseEntity<String>("{}", HttpStatus.BAD_REQUEST);
 		}
 		Message message = convertToEntity(messageDto);
+
+		message.setCreatedAt(LocalDateTime.now());
 		messageService.saveMessage(message);
 
 		return new ResponseEntity<String>("{\"message\":\"Message sent with success\"}", HttpStatus.OK);
