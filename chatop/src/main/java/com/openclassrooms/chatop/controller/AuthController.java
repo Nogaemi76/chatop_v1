@@ -6,10 +6,12 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+//import org.hibernate.annotations.common.util.impl.LoggerFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.openclassrooms.chatop.dto.UserDto;
 import com.openclassrooms.chatop.model.User;
 import com.openclassrooms.chatop.service.AuthService;
+import com.openclassrooms.chatop.service.TokenService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +33,8 @@ public class AuthController {
 	private final AuthService authService;
 
 	private final ModelMapper modelMapper;
+
+	private final TokenService tokenService;
 
 	@PostMapping("/api/auth/register")
 	public ResponseEntity<String> register(@RequestBody UserDto userDto) throws ParseException {
@@ -82,6 +87,14 @@ public class AuthController {
 	private User convertToEntity(UserDto userDto) throws ParseException {
 		User user = modelMapper.map(userDto, User.class);
 		return user;
+	}
+
+	@PostMapping("/token")
+	public String token(Authentication authentication) {
+		logger.info("Token requested for user: '{}'", authentication.getName());
+		String token = tokenService.generateToken(authentication);
+		logger.info("Token granted: {}", token);
+		return token;
 	}
 
 }
