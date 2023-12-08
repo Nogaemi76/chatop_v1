@@ -11,6 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,18 +37,48 @@ public class AuthController {
 	private final ModelMapper modelMapper;
 
 	private final TokenService tokenService;
+	private final AuthenticationManager authenticationManager;
+
+	/*
+	 * @PostMapping("/api/auth/register") public ResponseEntity<String>
+	 * register(@RequestBody UserDto userDto) throws ParseException { User user =
+	 * convertToEntity(userDto); if (user.getName() == null || user.getEmail() ==
+	 * null || user.getPassword() == null) { return new ResponseEntity<String>("{}",
+	 * HttpStatus.BAD_REQUEST); }
+	 * 
+	 * // logger.info("Test"); user.setCreatedAt(LocalDateTime.now());
+	 * authService.register(user); return new
+	 * ResponseEntity<String>("{\"token\":\"jwt\"}", HttpStatus.OK); }
+	 */
 
 	@PostMapping("/api/auth/register")
-	public ResponseEntity<String> register(@RequestBody UserDto userDto) throws ParseException {
+	public ResponseEntity<String> register2(@RequestBody UserDto userDto) throws ParseException {
+		logger.info("After map");
 		User user = convertToEntity(userDto);
 		if (user.getName() == null || user.getEmail() == null || user.getPassword() == null) {
 			return new ResponseEntity<String>("{}", HttpStatus.BAD_REQUEST);
 		}
+		logger.info("Before auth");
+		String name = user.getName();
+		String password = user.getPassword();
+		logger.info("name: '{}'", name);
+		logger.info("password: '{}'", password);
+
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(name, password));
+
+		// Authentication authentication = authenticationManager
+		// .authenticate(new UsernamePasswordAuthenticationToken("Emilie", "pwd"));
+		logger.info("After auth");
+		logger.info("Token requested for user: '{}'", authentication.getName());
+		String token = tokenService.generateToken(authentication);
+		logger.info("After token");
+		logger.info("Token granted: {}", token);
 
 		// logger.info("Test");
 		user.setCreatedAt(LocalDateTime.now());
 		authService.register(user);
-		return new ResponseEntity<String>("{\"token\":\"jwt\"}", HttpStatus.OK);
+		return new ResponseEntity<String>("{\"token\":\" " + token + "}", HttpStatus.OK);
 	}
 
 	@PostMapping("/api/auth/login")
@@ -91,6 +123,7 @@ public class AuthController {
 
 	@PostMapping("/token")
 	public String token(Authentication authentication) {
+		logger.info("authentication: '{}'", authentication);
 		logger.info("Token requested for user: '{}'", authentication.getName());
 		String token = tokenService.generateToken(authentication);
 		logger.info("Token granted: {}", token);
